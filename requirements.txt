@@ -1,0 +1,14 @@
+python-dotenv==0.19.2
+pymongo==4.3.3
+langchain-community==0.0.10
+PyPDF2==3.0.1
+sentence-transformers==2.2.2
+langchain==0.1.0
+langchain-anthropic==0.0.6
+openai
+PyPDF2
+ollama
+pyyaml
+beautifulsoup4
+lxml
+python-dotenv

@@ -1,0 +1,679 @@
+/* styles.css */
+
+/* =========================================================
+   1. Reset and Base Styles
+========================================================= */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    scroll-behavior: smooth;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* =========================================================
+   2. CSS Variables for Theming
+========================================================= */
+:root {
+    /* Light Mode Variables */
+    --bg-color: #FFFFFF;
+    --sidebar-bg: #F3F4F6;
+    --text-color: #1F2937;
+    --accent-color: #6B7280;
+    --button-bg: #E5E7EB;
+    --button-text: #374151;
+    --active-bg: #D1D5DB;
+    --primary-color: #4F46E5;
+    --input-bg: #F9FAFB;
+    --input-text: #1F2937;
+    --message-bg-user: var(--primary-color);
+    --message-bg-bot: #F3F4F6;
+    --message-text-user: #FFFFFF;
+    --message-text-bot: #1F2937;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --hover-bg: rgba(0, 0, 0, 0.05);
+    --neon-glow: 0 0 10px rgba(115, 218, 202, 0.3);
+    --logo-color: #9CA3AF;
+}
+
+body.dark-mode {
+    /* Dark Mode Variables */
+    --bg-color: #111827;
+    --sidebar-bg: #1F2937;
+    --text-color: #F9FAFB;
+    --accent-color: #9CA3AF;
+    --button-bg: #374151;
+    --button-text: #E5E7EB;
+    --active-bg: #4B5563;
+    --primary-color: #6366F1;
+    --input-bg: #374151;
+    --input-text: #F9FAFB;
+    --message-bg-user: var(--primary-color);
+    --message-bg-bot: #1F2937;
+    --message-text-user: #FFFFFF;
+    --message-text-bot: #F9FAFB;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    --hover-bg: rgba(255, 255, 255, 0.1);
+}
+
+body.robotic-mode {
+    /* Robotic Theme Variables (Optional) */
+    --bg-color: #1a1b26;
+    --sidebar-bg: #13141f;
+    --text-color: #a9b1d6;
+    --accent-color: #7aa2f7;
+    --button-bg: #24283b;
+    --button-text: #c0caf5;
+    --active-bg: #292e42;
+    --primary-color: #73daca;
+    --input-bg: #1a1b26;
+    --input-text: #c0caf5;
+    --message-bg-user: #292e42;
+    --message-bg-bot: #1a1b26;
+    --message-text-user: #c0caf5;
+    --message-text-bot: #a9b1d6;
+    --neon-glow: 0 0 10px rgba(115, 218, 202, 0.3);
+}
+
+/* =========================================================
+   3. Layout Styles
+========================================================= */
+
+/* Main Layout Container */
+.d-flex.vh-100 {
+    position: relative;
+    overflow: hidden;
+    height: 100vh;
+    background: var(--bg-color);
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    height: 100vh;
+    padding: 20px;
+    transition: transform 0.3s ease, width 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    border-right: 1px solid var(--accent-color);
+    border-radius: 0.5rem;
+}
+
+/* Hide Sidebar */
+.sidebar.hidden {
+    transform: translateX(-100%);
+    width: 0;
+    padding: 0;
+    opacity: 0;
+}
+
+/* Sidebar Navigation Links */
+.sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 0.75rem;
+    margin: 0.5rem 0;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: var(--hover-bg);
+    transform: translateX(5px);
+    box-shadow: var(--neon-glow);
+}
+
+.sidebar .nav-link i {
+    font-size: 1.2rem;
+}
+
+.sidebar .nav-link span {
+    margin-left: 15px;
+}
+
+/* Sidebar Toggle Button */
+#sidebarToggle {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+#sidebarToggle:hover {
+    transform: scale(1.1);
+}
+
+/* Sidebar Open Button */
+.btn-sidebar-open {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--accent-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: none; /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1001;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-sidebar-open.active {
+    display: flex; /* Show when active */
+}
+
+.btn-sidebar-open:hover {
+    transform: scale(1.1);
+    box-shadow: var(--card-shadow);
+}
+
+.btn-sidebar-open i {
+    font-size: 1.5rem;
+    color: var(--text-color);
+}
+
+/* Header Styling */
+.header {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: var(--bg-color);
+    border-bottom: 1px solid var(--accent-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+/* Theme Toggle Button */
+.header .btn-outline-secondary {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Main Content Area */
+.flex-grow-1.d-flex.flex-column {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    transition: margin-left 0.3s ease, width 0.3s ease;
+    background: var(--bg-color);
+    position: relative;
+    min-height: 100vh;
+}
+
+body.sidebar-hidden .flex-grow-1.d-flex.flex-column {
+    margin-left: 0;
+    width: 100%;
+}
+
+/* Chat Window Styling */
+#chat-window {
+    flex-grow: 1;
+    width: 100%;
+    padding: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 100px;
+    scroll-behavior: smooth;
+}
+
+/* Scrollbar Styling */
+#chat-window::-webkit-scrollbar {
+    width: 8px;
+}
+
+#chat-window::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+#chat-window::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+#chat-window::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* =========================================================
+   4. Components
+========================================================= */
+
+/* Message Styling */
+.message {
+    width: 100%;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-bottom: 1px solid rgba(122, 162, 247, 0.1);
+    border-radius: 0.5rem;
+    background: var(--message-bg-bot);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, background 0.3s ease;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.message.user {
+    background: var(--message-bg-user);
+}
+
+.message.bot {
+    background: var(--message-bg-bot);
+}
+
+.message:hover {
+    transform: translateY(-2px);
+}
+
+.message .message-content {
+    max-width: 800px;
+    margin: 0 auto;
+    color: var(--text-color);
+    font-size: 1rem;
+    line-height: 1.6;
+    font-family: 'Inter', monospace;
+}
+
+.message .avatar {
+    width: 40px;
+    height: 40px;
+    background-color: var(--accent-color);
+    color: #FFFFFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 10px;
+    animation: floatIn 0.5s ease-in-out;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+    padding: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+/* Input Area Styling */
+#chat-form {
+    padding: 1rem;
+    transition: padding 0.3s ease;
+}
+
+body.sidebar-hidden #chat-form {
+    padding: 1rem;
+}
+
+#chat-form .input-group {
+    max-width: 900px;
+    margin: 0 auto;
+    border-radius: 1rem;
+    padding: 0.5rem;
+    background: var(--input-bg);
+    border: 1px solid var(--accent-color);
+    box-shadow: var(--neon-glow);
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+#chat-form .input-group:focus-within {
+    box-shadow: 0 0 15px rgba(115, 218, 202, 0.5);
+}
+
+#chat-form .form-control {
+    background: transparent;
+    border: none;
+    color: var(--input-text);
+    font-size: 1.1rem;
+    padding: 16px;
+    font-family: 'Inter', monospace;
+    flex: 1;
+}
+
+#chat-form .form-control:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+#chat-form .btn {
+    padding: 10px 20px;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+    margin-left: 5px;
+}
+
+#chat-form .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+#chat-form .btn:active {
+    transform: translateY(0);
+}
+
+/* Suggested Prompts */
+.suggested-prompts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.suggested-prompts .btn {
+    transition: all 0.3s ease;
+    border-radius: 20px;
+    padding: 10px 20px;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--accent-color);
+}
+
+.suggested-prompts .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Welcome Screen */
+.welcome-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 40px 20px;
+    color: var(--text-color);
+    border-radius: 1rem;
+    margin: 2rem auto;
+    max-width: 800px;
+}
+
+.welcome-screen h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    text-shadow: var(--neon-glow);
+}
+
+.welcome-screen p {
+    font-size: 1.2rem;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+}
+
+/* Additional Styling for Centering the Welcome Screen Text */
+.welcome-screen {
+    margin-top: 5rem;
+}
+
+.prompt-btn {
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--accent-color);
+    padding: 0.75rem 1.25rem;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+}
+
+.prompt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* =========================================================
+   5. Responsive Design
+========================================================= */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        max-width: 260px;
+        transform: translateX(-100%);
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .flex-grow-1.d-flex.flex-column {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    #chat-form {
+        padding: 0.75rem;
+    }
+
+    #chat-window {
+        height: calc(100vh - 160px);
+        margin-bottom: 80px;
+    }
+
+    .message {
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+
+    .welcome-screen h1 {
+        font-size: 2rem;
+    }
+
+    .welcome-screen p {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #chat-form {
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    #chat-form .form-control {
+        font-size: 1rem;
+        padding: 12px;
+    }
+
+    .message .message-content {
+        font-size: 1rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+    }
+
+    .flex-grow-1.d-flex.flex-column {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+    }
+}
+
+/* =========================================================
+   6. Button Styling
+========================================================= */
+.btn {
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--accent-color);
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* =========================================================
+   7. Scrollbar Styling
+========================================================= */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* =========================================================
+   8. Animations
+========================================================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+@keyframes floatIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Update Welcome Screen styling */
+.welcome-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 2rem;
+    border-radius: 1rem;
+    z-index: 10;
+    width: 90%;
+    max-width: 600px;
+}
+
+/* Add animation for welcome screen */
+.welcome-screen {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -40%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* Update suggested prompts styling */
+.suggested-prompts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.prompt-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 1.5rem;
+    transition: all 0.3s ease;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--accent-color);
+}
+
+.prompt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow);
+}
+
+/* Make welcome screen responsive */
+@media (max-width: 768px) {
+    .welcome-screen {
+        width: 95%;
+        padding: 1.5rem;
+    }
+
+    .welcome-screen h1 {
+        font-size: 1.75rem;
+    }
+
+    .suggested-prompts {
+        gap: 0.75rem;
+    }
+
+    .prompt-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta Tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project 1</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+        rel="stylesheet"
+    />
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+        rel="stylesheet"
+    />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="./static/css/styles.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+</head>
+<body>
+    <div class="d-flex vh-100">
+        <!-- Sidebar -->
+        <aside class="sidebar d-flex flex-column hidden">
+            <!-- Toggle Button -->
+            <button
+                class="btn btn-toggle align-self-end mt-3 me-3"
+                id="sidebarToggle"
+                aria-label="Toggle Sidebar"
+            >
+                <i class="bi bi-list"></i>
+            </button>
+
+            <!-- Logo -->
+            <div class="logo text-center my-4">
+                <a href="#">
+                    <svg
+                        id="logo"
+                        width="50"
+                        height="50"
+                        viewBox="0 0 64 64"
+                        xmlns="http://www.w3.org/2000/svg"
+                        style="fill: var(--logo-color);"
+                    >
+                        <circle cx="32" cy="32" r="30" />
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-grow-1">
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-2">
+                        <a href="#" class="nav-link active" data-tooltip="New Chat" id="newChatBtn">
+                            <i class="bi bi-chat-left-text-fill"></i>
+                            <span>New Chat</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="#" class="nav-link" data-tooltip="Clear Chat" id="clearChatBtn">
+                            <i class="bi bi-trash-fill"></i>
+                            <span>Clear Chat</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="#" class="nav-link" data-tooltip="Settings">
+                            <i class="bi bi-gear-fill"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="#" class="nav-link" data-tooltip="About">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <span>About</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Logout -->
+            <div class="mt-auto mb-4">
+                <a href="#" class="nav-link" data-tooltip="Logout">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Sidebar Open Button -->
+        <button
+            class="btn btn-sidebar-open"
+            id="sidebarOpen"
+            aria-label="Open Sidebar"
+        >
+            <i class="bi bi-list"></i>
+        </button>
+
+        <div class="welcome-screen" id="welcome-screen">
+            <h1>Welcome to Project 1</h1>
+            <p>What do you wanna do today?</p>
+            <div class="suggested-prompts">
+                <button class="btn btn-outline-primary prompt-btn" data-prompt="Tell me a joke">Tell me a joke</button>
+                <button class="btn btn-outline-primary prompt-btn" data-prompt="Surprise me">Surprise me</button>
+                <button class="btn btn-outline-primary prompt-btn" data-prompt="Talk like Gen-Z">Talk like Gen-Z</button>
+            </div>
+        </div>
+        
+
+        <!-- Main Chat Area -->
+        <div class="flex-grow-1 d-flex flex-column">
+            <!-- Header -->
+            <header
+                class="header d-flex justify-content-between align-items-center shadow-sm"
+            >
+                <div class="d-flex align-items-center">
+                    <!-- Mobile Sidebar Toggle -->
+                    <button
+                        class="btn btn-outline-secondary me-2 d-md-none"
+                        id="sidebarToggleMobile"
+                        aria-label="Toggle Sidebar"
+                    >
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots-fill me-2" style="margin-left: 60px;"></i> Project 1
+                    </h5>
+                </div>
+                <button
+                    id="theme-toggle"
+                    class="btn btn-outline-secondary btn-sm"
+                    aria-label="Toggle Theme"
+                >
+                    <i class="bi bi-moon-fill me-2"></i> Dark Mode
+                </button>
+            </header>
+
+            <!-- Chat Window -->
+            <main id="chat-window" class="flex-grow-1 overflow-auto">
+                <!-- Messages will be appended here -->
+            </main>
+
+            <!-- Input Area -->
+            <form id="chat-form" class="p-3">
+                <div class="input-group justify-content-center">
+                    <!-- File Attachment Button -->
+                    <button
+                        class="btn btn-secondary"
+                        type="button"
+                        id="file-btn"
+                        aria-label="Attach File"
+                    >
+                        <i class="bi bi-paperclip"></i>
+                    </button>
+                    <!-- Hidden File Input -->
+                    <input type="file" id="file-input" style="display: none;" />
+
+                    <!-- Text Input Box -->
+                    <input
+                        type="text"
+                        id="user-input"
+                        class="form-control"
+                        placeholder="Type your message..."
+                        autocomplete="off"
+                        required
+                    />
+
+                    <!-- Voice Input Button -->
+                    <button
+                        class="btn btn-secondary"
+                        type="button"
+                        id="voice-btn"
+                        aria-label="Voice Input"
+                    >
+                        <i class="bi bi-mic-fill"></i>
+                    </button>
+
+                    <!-- Send Button -->
+                    <button
+                        class="btn btn-primary"
+                        type="submit"
+                        aria-label="Send Message"
+                    >
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Overlay for Mobile Sidebar -->
+    <div class="overlay"></div>
+
+    <!-- Bootstrap JS Bundle (Includes Popper) -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    ></script>
+
+    <!-- Custom JS -->
+    <script src="./static/js/script.js"></script>
+</body>
+</html>
