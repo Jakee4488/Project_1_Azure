@@ -2,13 +2,13 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
-import PyPDF2
-import re
-from pathlib import Path
 import torch
 import ollama
 from openai import OpenAI
 import json
+
+from helpers.file_utils import allowed_file
+from helpers.pdf_utils import process_uploaded_pdf
 
 app = Flask(__name__)
 CORS(app)
@@ -58,7 +58,6 @@ def upload_file():
             return jsonify({'error': f'Failed to save file: {str(save_error)}'}), 500
     else:
         return jsonify({'error': 'File type not allowed'}), 400
-
 @app.route('/api/query', methods=['POST'])
 def query_documents():
     data = request.json
@@ -67,8 +66,8 @@ def query_documents():
     if not user_query:
         return jsonify({'error': 'No query provided'}), 400
 
-    embeddings_path = os.path.join(BASE_DIR, 'embeddings.pt')
-    vault_path = os.path.join(BASE_DIR, 'vault.txt')
+    embeddings_path = os.path.join(BASE_DIR, 'helpers', 'embeddings.pt')
+    vault_path = os.path.join(BASE_DIR, 'helpers', 'vault.txt')
 
     if not os.path.exists(embeddings_path) or not os.path.exists(vault_path):
         return jsonify({'error': 'No documents have been processed yet'}), 400
@@ -106,66 +105,6 @@ def query_documents():
         'response': response.choices[0].message.content,
         'context': relevant_context
     }), 200
-
-# Functions
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def process_uploaded_pdf(file_path):
-    try:
-        with open(file_path, 'rb') as pdf_file:
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
-            num_pages = len(pdf_reader.pages)
-            text = ''
-            for page_num in range(num_pages):
-                page = pdf_reader.pages[page_num]
-                text += page.extract_text() + " " if page.extract_text() else ""
-
-            text = re.sub(r'\s+', ' ', text).strip()
-            sentences = re.split(r'(?<=[.!?]) +', text)
-            chunks = []
-            current_chunk = ""
-
-            for sentence in sentences:
-                if len(current_chunk) + len(sentence) + 1 < 1000:
-                    current_chunk += (sentence + " ").strip()
-                else:
-                    chunks.append(current_chunk)
-                    current_chunk = sentence + " "
-
-            if current_chunk:
-                chunks.append(current_chunk)
-
-            vault_path = os.path.join(BASE_DIR, 'vault.txt')
-            with open(vault_path, "a", encoding="utf-8") as vault_file:
-                for chunk in chunks:
-                    vault_file.write(chunk.strip() + "\n")
-
-            generate_embeddings()
-            return True, "PDF processed successfully"
-    except Exception as e:
-        return False, str(e)
-
-def generate_embeddings():
-    try:
-        vault_content = []
-        vault_path = os.path.join(BASE_DIR, 'vault.txt')
-        if os.path.exists(vault_path):
-            with open(vault_path, "r", encoding='utf-8') as vault_file:
-                vault_content = vault_file.readlines()
-
-        vault_embeddings = []
-        for content in vault_content:
-            response = ollama.embeddings(model='mxbai-embed-large', prompt=content)
-            vault_embeddings.append(response["embedding"])
-
-        vault_embeddings_tensor = torch.tensor(vault_embeddings)
-        embeddings_path = os.path.join(BASE_DIR, 'embeddings.pt')
-        torch.save(vault_embeddings_tensor, embeddings_path)
-
-        return True, "Embeddings generated successfully"
-    except Exception as e:
-        return False, str(e)
 
 if __name__ == '__main__':
     app.run(debug=True)
