@@ -18,6 +18,13 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'}
 
+EMBEDDINGS_DIR = os.path.join(BASE_DIR, 'embeddings', 'embeddings.pt')
+
+CHUNKS_DIR = os.path.join(BASE_DIR, 'chunks','vault.txt')
+
+
+
+
 # Create upload folder with proper permissions
 os.makedirs(UPLOAD_FOLDER, mode=0o777, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -65,9 +72,11 @@ def query_documents():
 
     if not user_query:
         return jsonify({'error': 'No query provided'}), 400
+    
+    
+    embeddings_path = EMBEDDINGS_DIR
 
-    embeddings_path = os.path.join(BASE_DIR, 'helpers', 'embeddings.pt')
-    vault_path = os.path.join(BASE_DIR, 'helpers', 'vault.txt')
+    vault_path =CHUNKS_DIR
 
     if not os.path.exists(embeddings_path) or not os.path.exists(vault_path):
         return jsonify({'error': 'No documents have been processed yet'}), 400

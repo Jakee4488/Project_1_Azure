@@ -3,7 +3,11 @@ import re
 import PyPDF2
 from .embedding_utils import generate_embeddings
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+CHUNKS_DIR = os.path.join(BASE_DIR, 'chunks')
+
+os.makedirs(CHUNKS_DIR, exist_ok=True)
 
 def process_uploaded_pdf(file_path):
     try:
@@ -30,7 +34,7 @@ def process_uploaded_pdf(file_path):
             if current_chunk:
                 chunks.append(current_chunk)
 
-            vault_path = os.path.join(BASE_DIR, 'vault.txt')
+            vault_path = os.path.join(CHUNKS_DIR, 'vault.txt')
             with open(vault_path, "a", encoding="utf-8") as vault_file:
                 for chunk in chunks:
                     vault_file.write(chunk.strip() + "\n")

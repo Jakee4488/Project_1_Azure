@@ -2,12 +2,16 @@ import os
 import torch
 import ollama
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+EMBEDDINGS_DIR = os.path.join(BASE_DIR, 'embeddings')
+CHUNKS_DIR = os.path.join(BASE_DIR, 'chunks')
+
+os.makedirs(EMBEDDINGS_DIR, exist_ok=True)
 
 def generate_embeddings():
     try:
         vault_content = []
-        vault_path = os.path.join(BASE_DIR, 'vault.txt')
+        vault_path = os.path.join(CHUNKS_DIR, 'vault.txt')
         if os.path.exists(vault_path):
             with open(vault_path, "r", encoding='utf-8') as vault_file:
                 vault_content = vault_file.readlines()
@@ -18,7 +22,7 @@ def generate_embeddings():
             vault_embeddings.append(response["embedding"])
 
         vault_embeddings_tensor = torch.tensor(vault_embeddings)
-        embeddings_path = os.path.join(BASE_DIR, 'embeddings.pt')
+        embeddings_path = os.path.join(EMBEDDINGS_DIR, 'embeddings.pt')
         torch.save(vault_embeddings_tensor, embeddings_path)
 
         return True, "Embeddings generated successfully"
