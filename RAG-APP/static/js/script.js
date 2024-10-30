@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector('.sidebar');
     const welcomeScreen = document.getElementById('welcome-screen');
     const body = document.body;
+     chatForm.addEventListener('submit', handleFormSubmit);
 
     let isBotResponding = false;
     let recognition;
@@ -69,49 +70,84 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('newChatBtn').addEventListener('click', newChat);
     }
 
-    function handleFormSubmit(e) {
+    async function handleFormSubmit(e) {
         e.preventDefault();
         const message = userInput.value.trim();
         if (message === '') return;
-
+    
         // Remove the welcome screen when the user sends their first message
         if (welcomeScreen) {
             welcomeScreen.style.display = 'none';
         }
-
+    
         appendMessage('user', message);
         saveMessage('user', message);
         userInput.value = '';
         userInput.focus();
-
+    
         if (!isBotResponding) {
             isBotResponding = true;
-            simulateTyping(() => {
-                const botResponse = getBotResponse(message);
-                appendMessage('bot', botResponse);
-                saveMessage('bot', botResponse);
+            appendMessage('bot', 'loading');
+    
+            try {
+                const response = await queryDocuments(message);
+                const loadingMessage = chatWindow.querySelector('.message.bot.loading');
+                if (loadingMessage) loadingMessage.remove();
+                appendMessage('bot', response.response);
+            } catch (error) {
+                console.error('Error:', error);
+                appendMessage('bot', 'Sorry, something went wrong.');
+            } finally {
                 isBotResponding = false;
-            });
+            }
         }
     }
-
+    
+    async function queryDocuments(userQuery) {
+        const response = await fetch('/api/query', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ query: userQuery })
+        });
+    
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to query documents');
+        }
+    
+        const data = await response.json();
+        return data;
+    }
     function handleFileSelection(e) {
         const file = e.target.files[0];
         if (file) {
             appendMessage('user', 'Sent a file:', file);
             fileInput.value = '';
-
+    
+            const formData = new FormData();
+            formData.append('file', file);
+    
             if (!isBotResponding) {
                 appendMessage('bot', 'loading');
                 isBotResponding = true;
-
-                setTimeout(() => {
+    
+                fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
                     const loadingMessage = chatWindow.querySelector('.message.bot.loading');
                     if (loadingMessage) loadingMessage.remove();
-                    const botResponse = getBotResponse('file');
-                    appendMessage('bot', botResponse);
+                    appendMessage('bot', data.response);
                     isBotResponding = false;
-                }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    isBotResponding = false;
+                });
             }
         }
     }
