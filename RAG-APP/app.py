@@ -66,10 +66,10 @@ def upload_file():
 def query_documents():
     data = request.json
     user_query = data.get('query')
-    #filename = data.get('filename')
+    filename = data.get('filename')
 
 
-    filename = 'Attention'
+    #filename = 'Attention2'
     """need to get filename form the state and loop through all the relevnt documents i need creating the embeddings if not been created 
     and then query the documents and return the response"""
      
@@ -79,10 +79,15 @@ def query_documents():
 
     if not filename:
         return jsonify({'error': 'Filename is required'}), 400
+    
+    """print('filename:',filename)"""
 
     chunks_path = os.path.join(CHUNKS_DIR, f'{filename}_vault.txt')
     embeddings_path = os.path.join(EMBEDDINGS_DIR, f'{filename}_embeddings.txt')
 
+    """print('chunks_path:',chunks_path)
+    print('embeddings_path:',embeddings_path)
+    """
     if not os.path.exists(chunks_path) or not os.path.exists(embeddings_path):
         return jsonify({'error': 'Chunks or embeddings file not found'}), 404
 
