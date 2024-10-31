@@ -15,11 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector('.sidebar');
     const welcomeScreen = document.getElementById('welcome-screen');
     const body = document.body;
-    chatForm.addEventListener('submit', handleFormSubmit);
+     chatForm.addEventListener('submit', handleFormSubmit);
 
     let isBotResponding = false;
     let recognition;
-    let uploadedFilename = ''; // State variable to store the filename
 
     initializeSpeechRecognition();
     initializeEventListeners();
@@ -52,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Toggles the voice icon between listening and not listening states
     function toggleVoiceIcon(isListening) {
         voiceBtn.innerHTML = isListening ? `<i class="bi bi-mic-mute-fill"></i>` : `<i class="bi bi-mic-fill"></i>`;
     }
@@ -72,28 +70,27 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('newChatBtn').addEventListener('click', newChat);
     }
 
-    // Handles form submission for chat input
     async function handleFormSubmit(e) {
         e.preventDefault();
         const message = userInput.value.trim();
         if (message === '') return;
-
+    
         // Remove the welcome screen when the user sends their first message
         if (welcomeScreen) {
             welcomeScreen.style.display = 'none';
         }
-
+    
         appendMessage('user', message);
         saveMessage('user', message);
         userInput.value = '';
         userInput.focus();
-
+    
         if (!isBotResponding) {
             isBotResponding = true;
             appendMessage('bot', 'loading');
-
+    
             try {
-                const response = await queryDocuments(message, uploadedFilename);
+                const response = await queryDocuments(message);
                 const loadingMessage = chatWindow.querySelector('.message.bot.loading');
                 if (loadingMessage) loadingMessage.remove();
                 appendMessage('bot', response.response);
@@ -105,40 +102,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
-    // Queries the documents with the user's query
-    async function queryDocuments(userQuery, filename) {
+    
+    async function queryDocuments(userQuery) {
         const response = await fetch('/api/query', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ query: userQuery, filename: filename })
+            body: JSON.stringify({ query: userQuery })
         });
-
+    
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.error || 'Failed to query documents');
         }
-
+    
         const data = await response.json();
         return data;
     }
-
-    // Handles file selection and upload
     function handleFileSelection(e) {
         const file = e.target.files[0];
         if (file) {
             appendMessage('user', 'Sent a file:', file);
             fileInput.value = '';
-
+    
             const formData = new FormData();
             formData.append('file', file);
-
+    
             if (!isBotResponding) {
                 appendMessage('bot', 'loading');
                 isBotResponding = true;
-
+    
                 fetch('/api/upload', {
                     method: 'POST',
                     body: formData
@@ -147,8 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(data => {
                     const loadingMessage = chatWindow.querySelector('.message.bot.loading');
                     if (loadingMessage) loadingMessage.remove();
-                    appendMessage('bot', data.message);
-                    uploadedFilename = data.filename; // Store the uploaded filename
+                    appendMessage('bot', data.response);
                     isBotResponding = false;
                 })
                 .catch(error => {
@@ -159,33 +152,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Toggles the sidebar visibility
     function toggleSidebar() {
         sidebar.classList.toggle('hidden');
         updateMainContentLayout();
         toggleOpenButton();
     }
 
-    // Opens the sidebar
     function openSidebar() {
         sidebar.classList.remove('hidden');
         updateMainContentLayout();
         toggleOpenButton();
     }
 
-    // Shows the sidebar on mobile
     function showSidebarMobile() {
         sidebar.classList.add('show');
         overlay.classList.add('show');
     }
 
-    // Closes the sidebar on mobile
     function closeSidebarMobile() {
         sidebar.classList.remove('show');
         overlay.classList.remove('show');
     }
 
-    // Handles responsive sidebar behavior
     function handleResponsiveSidebar() {
         if (window.innerWidth <= 768) {
             sidebar.classList.add('hidden');
@@ -198,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Updates the main content layout based on sidebar visibility
     function updateMainContentLayout() {
         const mainContent = document.querySelector('.flex-grow-1.d-flex.flex-column');
         const isSidebarHidden = sidebar.classList.contains('hidden');
@@ -206,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainContent.style.width = isSidebarHidden ? '100%' : 'calc(100% - 260px)';
     }
 
-    // Appends a message to the chat window
+    // Append message to chat window
     function appendMessage(sender, text, file = null) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', sender, 'animate__animated', 'animate__fadeIn');
@@ -231,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveMessage(sender, text, file);
     }
 
-    // Adds a bot avatar to the message element
     function addBotAvatar(messageElement) {
         const avatar = document.createElement('div');
         avatar.classList.add('avatar');
@@ -239,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.appendChild(avatar);
     }
 
-    // Adds a timestamp to the message content
     function addTimestamp(messageContent) {
         const timestamp = document.createElement('div');
         timestamp.classList.add('timestamp');
@@ -248,7 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
         messageContent.appendChild(timestamp);
     }
 
-    // Creates a file preview element
     function createFilePreview(file) {
         const previewContainer = document.createElement('div');
         previewContainer.classList.add('file-preview', 'mt-2');
@@ -274,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return previewContainer;
     }
 
-    // Simulates typing indicator
     function simulateTyping(callback) {
         const typingIndicator = document.createElement('div');
         typingIndicator.classList.add('typing-indicator');
@@ -287,7 +270,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
 
-    // Gets a bot response based on user message
     function getBotResponse(userMessage) {
         if (userMessage === 'file') return "I see you've sent a file. How can I assist you with it?";
 
@@ -319,14 +301,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return randomResponses[Math.floor(Math.random() * randomResponses.length)];
     }
 
-    // Saves a message to local storage
     function saveMessage(sender, text, file = null) {
         const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
         chatHistory.push({ sender, text, timestamp: new Date().toISOString() });
         localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
     }
 
-    // Loads chat history from local storage
     function loadChatHistory() {
         const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
         if (chatHistory.length === 0) {
@@ -337,7 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Clears the chat history
     function clearChat() {
         localStorage.removeItem('chatHistory');
         chatWindow.innerHTML = '';
@@ -346,7 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Starts a new chat
     function newChat() {
         chatWindow.innerHTML = '';
         localStorage.removeItem('chatHistory');
@@ -355,14 +333,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Toggles the theme between light and dark modes
     function toggleTheme() {
         const isDarkMode = document.body.classList.toggle('dark-mode');
         themeToggleBtn.innerHTML = isDarkMode ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-fill"></i>';
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     }
 
-    // Loads the saved theme from local storage
     function loadTheme() {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -371,7 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Toggles the open button for the sidebar
     function toggleOpenButton() {
         if (sidebar.classList.contains('hidden')) {
             sidebarOpenBtn.classList.add('active');
@@ -389,13 +364,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Handles predefined prompt actions
     function handlePromptAction(promptText) {
         // Remove the welcome screen when the user clicks a suggested prompt
         if (welcomeScreen) {
             welcomeScreen.style.display = 'none';
         }
-
+        
         // Handle predefined prompts
         appendMessage('user', promptText);
         if (promptText === 'Tell me a joke') {

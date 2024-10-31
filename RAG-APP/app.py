@@ -66,13 +66,13 @@ def upload_file():
 def query_documents():
     data = request.json
     user_query = data.get('query')
-    filename = data.get('filename')
+    #filename = data.get('filename')
 
 
-    #filename = 'Attention'
-    """need to get filename form the state and loop through all the relevnt documents if need creating the embeddings if not been created 
+    filename = 'Attention'
+    """need to get filename form the state and loop through all the relevnt documents i need creating the embeddings if not been created 
     and then query the documents and return the response"""
-
+     
     if not user_query:
         return jsonify({'error': 'No query provided'}), 400
     
