@@ -4,18 +4,11 @@ from werkzeug.utils import secure_filename
 import os
 import torch
 import ollama
-from openai import OpenAI,AzureOpenAI
-
+from openai import OpenAI
 import json
 
 from helpers.file_utils import allowed_file
 from helpers.pdf_utils import process_uploaded_pdf
-
-endpoint = "https://rag-chatapp.openai.azure.com/"
-deployment ="gpt-35-turbo-16k" 
-subscription_key = "2NCD4p44jNbxqVXEFl5cEjcIg5fbqrNi5INs3VvPwQGPnt6zGWPKJQQJ99AJACmepeSXJ3w3AAABACOGAHUq"  
-
-
 
 app = Flask(__name__)
 CORS(app)
@@ -68,21 +61,33 @@ def upload_file():
             return jsonify({'error': f'Failed to save file: {str(save_error)}'}), 500
     else:
         return jsonify({'error': 'File type not allowed'}), 400
+
 @app.route('/api/query', methods=['POST'])
 def query_documents():
     data = request.json
     user_query = data.get('query')
     filename = data.get('filename')
 
+
+    #filename = 'Attention2'
+    """need to get filename form the state and loop through all the relevnt documents i need creating the embeddings if not been created 
+    and then query the documents and return the response"""
+     
     if not user_query:
         return jsonify({'error': 'No query provided'}), 400
+    
 
     if not filename:
         return jsonify({'error': 'Filename is required'}), 400
+    
+    """print('filename:',filename)"""
 
     chunks_path = os.path.join(CHUNKS_DIR, f'{filename}_vault.txt')
     embeddings_path = os.path.join(EMBEDDINGS_DIR, f'{filename}_embeddings.txt')
 
+    """print('chunks_path:',chunks_path)
+    print('embeddings_path:',embeddings_path)
+    """
     if not os.path.exists(chunks_path) or not os.path.exists(embeddings_path):
         return jsonify({'error': 'Chunks or embeddings file not found'}), 404
 
@@ -98,42 +103,29 @@ def query_documents():
     top_indices = torch.topk(cos_scores, k=top_k)[1].tolist()
     relevant_context = [chunks[idx].strip() for idx in top_indices]
 
-    client = AzureOpenAI(
-        azure_endpoint=endpoint,
-        api_key=subscription_key,
-        api_version="2024-05-01-preview",
+    client = OpenAI(
+        base_url='http://localhost:11434/v1',
+        api_key='llama3.1:8b'
     )
 
-    chat_prompt = [
-        {
-            "role": "system",
-            "content": "You are an AI assistant that helps people find information."
-        },
-        {
-            "role": "user",
-            "content": user_query+" "+ relevant_context[0]
-        }
+    system_message = "You are a helpful assistant expert in extracting useful information from text and providing additional relevant information."
+    context_str = "\n".join(relevant_context)
+
+    messages = [
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": f"{user_query}\n\nRelevant Context:\n{context_str}"}
     ]
 
-    completion = client.chat.completions.create(
-        model=deployment,
-        messages=chat_prompt,
-        max_tokens=800,
-        temperature=0.7,
-        top_p=0.95,
-        frequency_penalty=0,
-        presence_penalty=0,
-        stop=None,
-        stream=False
+    response = client.chat.completions.create(
+        model="llama3.1:8b",
+        messages=messages,
+        max_tokens=2000,
     )
- 
-    response_contents = completion.choices[0].message.content
 
     return jsonify({
-        'response':response_contents,
-        
-    })
-   
+        'response': response.choices[0].message.content,
+        'context': relevant_context
+    }), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
