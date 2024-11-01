@@ -1,12 +1,17 @@
 import os
 import torch
 import ollama
+from openai import OpenAI, AzureOpenAI
+
+from constants import BASE_DIR, EMBEDDINGS_DIR , CHUNKS_DIR, AZURE_EMBEDDING_MODEL, AZURE_API_ENDPOINT
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 EMBEDDINGS_DIR = os.path.join(BASE_DIR, 'embeddings')
 CHUNKS_DIR = os.path.join(BASE_DIR, 'chunks')
 
 os.makedirs(EMBEDDINGS_DIR, exist_ok=True)
+
+
 
 def generate_embeddings(filename):
     try:

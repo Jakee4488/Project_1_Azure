@@ -13,6 +13,6 @@ CHUNKS_DIR = os.path.join(BASE_DIR, 'chunks')
 
 AZURE_API_ENDPOINT = "https://rag-chatapp.openai.azure.com/"
 AZURE_API_MODEL="gpt-35-turbo-16k" 
-
+AZURE_EMBEDDING_MODEL="text-embedding-ada-002"
 
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
