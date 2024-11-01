@@ -1,42 +1,22 @@
-from flask import Flask, request, jsonify, render_template
-from flask_cors import CORS
-from werkzeug.utils import secure_filename
 import os
 import torch
+from flask import jsonify
 import ollama
-from openai import OpenAI, AzureOpenAI
-from dotenv import load_dotenv
+from openai import AzureOpenAI
 
-import json
+from constants import EMBEDDINGS_DIR, CHUNKS_DIR , BASE_DIR, UPLOAD_FOLDER, ALLOWED_EXTENSIONS, AZURE_API_ENDPOINT, AZURE_API_MODEL
 
-from helpers.file_utils import allowed_file ,handle_file_upload
-from helpers.pdf_utils import process_uploaded_pdf
+subscription_key = os.getenv('AZURE_APIKEY')
+embeddings_dir = EMBEDDINGS_DIR
+chunks_dir = CHUNKS_DIR
 
-from constants import (BASE_DIR, UPLOAD_FOLDER, ALLOWED_EXTENSIONS,
-                       EMBEDDINGS_DIR, CHUNKS_DIR, AZURE_API_MODEL,
-                       AZURE_API_ENDPOINT, MAX_CONTENT_LENGTH)
-
-# Load environment variables from .env file
-load_dotenv()
-
-app = Flask(__name__)
-CORS(app)
-
-# Update the upload_folder configuration
 base_dir = BASE_DIR
 upload_folder = UPLOAD_FOLDER
 allowed_extensions = ALLOWED_EXTENSIONS
 endpoint = AZURE_API_ENDPOINT
 deployment = AZURE_API_MODEL
 
-subscription_key = os.getenv('AZURE_APIKEY')
-embeddings_dir = EMBEDDINGS_DIR
-chunks_dir = CHUNKS_DIR
 
-# Create upload folder with proper permissions
-os.makedirs(upload_folder, mode=0o777, exist_ok=True)
-app.config['upload_folder'] = upload_folder
-app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 
 
@@ -95,33 +75,3 @@ def query_documents_helper(user_query, filename):
         'response': response_contents,
         'context': relevant_context
     }), 200
-
-# Routes
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-@app.route('/api/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-
-    file = request.files['file']
-    return handle_file_upload(file)
-
-@app.route('/api/query', methods=['POST'])
-def query_documents():
-    data = request.json
-    user_query = data.get('query')
-    filename = data.get('filename')
-
-    if not user_query:
-        return jsonify({'error': 'No query provided'}), 400
-
-    if not filename:
-        return jsonify({'error': 'Filename is required'}), 400
-
-    return query_documents_helper(user_query, filename)
-
-if __name__ == '__main__':
-    app.run(debug=True)
