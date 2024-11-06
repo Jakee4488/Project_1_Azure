@@ -60,7 +60,7 @@ def query_documents_helper(user_query, filename):
     completion = client.chat.completions.create(
         model=deployment,
         messages=chat_prompt,
-        max_tokens=800,
+        max_tokens=900,
         temperature=0.7,
         top_p=0.95,
         frequency_penalty=0,
