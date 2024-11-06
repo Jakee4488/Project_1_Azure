@@ -26,7 +26,7 @@ def generate_embeddings(filename):
             response = ollama.embeddings(model='mxbai-embed-large', prompt=content)
             vault_embeddings.append(response["embedding"])
 
-        embeddings_path = os.path.join(EMBEDDINGS_DIR, f'{filename}_embeddings')
+        embeddings_path = os.path.join(EMBEDDINGS_DIR, f'{filename}_embeddings.pt')
         with open(embeddings_path, "w", encoding='utf-8') as embeddings_file:
             for embedding in vault_embeddings:
                 embeddings_file.write(f"{embedding}\n")

@@ -13,10 +13,6 @@ from helpers.file_utils import handle_file_upload
 from helpers.pdf_utils import process_uploaded_pdf
 from helpers.query_utils import query_documents_helper
 
-from constants import (BASE_DIR, UPLOAD_FOLDER, ALLOWED_EXTENSIONS,
-                       EMBEDDINGS_DIR, CHUNKS_DIR, AZURE_API_MODEL,
-                       AZURE_API_ENDPOINT, MAX_CONTENT_LENGTH)
-
 # Load environment variables from .env file
 load_dotenv()
 

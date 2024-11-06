@@ -4,4 +4,4 @@ RAG-APP/app.txt
 RAG-APP/uploads/
 RAG-APP/chunks/
 RAG-APP/embeddings/
-RAG-APP/.env/
+RAG-APP/.env

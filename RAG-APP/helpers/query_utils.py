@@ -23,7 +23,7 @@ deployment = AZURE_API_MODEL
 # Helper function to query documents
 def query_documents_helper(user_query, filename):
     chunks_path = os.path.join(chunks_dir, f'{filename}_vault.txt')
-    embeddings_path = os.path.join(embeddings_dir, f'{filename}_embeddings.txt')
+    embeddings_path = os.path.join(embeddings_dir, f'{filename}_embeddings.pt')
 
     if not os.path.exists(chunks_path) or not os.path.exists(embeddings_path):
         return jsonify({'error': 'Chunks or embeddings file not found'}), 404
