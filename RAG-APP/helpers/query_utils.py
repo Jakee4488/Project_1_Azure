@@ -1,8 +1,8 @@
 import os
-import torch
 import json
+import faiss  # FAISS library
+import numpy as np
 from flask import jsonify
-import ollama
 from openai import AzureOpenAI
 from .embedding_utils import get_azure_embedding
 from constants import EMBEDDINGS_DIR, CHUNKS_DIR, BASE_DIR, UPLOAD_FOLDER, ALLOWED_EXTENSIONS, AZURE_API_ENDPOINT, AZURE_API_MODEL
@@ -32,17 +32,31 @@ def query_documents_helper(user_query, filename):
         chunks = chunks_file.readlines()
 
     with open(embeddings_path, 'r', encoding='utf-8') as embeddings_file:
-        embeddings = json.load(embeddings_file)  # JSON parsing instead of eval for safety
-    
+        embeddings = json.load(embeddings_file)
+
+    # Convert embeddings to a NumPy array
+    embeddings = np.array(embeddings, dtype=np.float32) # Shape: (num_chunks, embedding_dim)
+    embedding_dim = embeddings.shape[1]
+
+    # Initialize and populate FAISS index
+    index = faiss.IndexFlatL2(embedding_dim)  # L2 distance for FAISS, approximates cosine with normalization
+    index.add(embeddings)
+
     # Obtain query embedding
     query_embedding = get_azure_embedding(user_query)
+    query_embedding = np.array(query_embedding, dtype=np.float32).reshape(1, -1)
+    query_embedding = np.ascontiguousarray(query_embedding)
+    
+    # Normalize embeddings and query to use cosine similarity approximation
+    faiss.normalize_L2(embeddings)       # Normalize the document embeddings
+    faiss.normalize_L2(query_embedding)  # Normalize the query embedding
 
-    # Calculate cosine similarity
-    cos_scores = torch.cosine_similarity(torch.tensor(query_embedding).unsqueeze(0), torch.tensor(embeddings))
-    top_k = min(10, len(cos_scores))
-    top_indices = torch.topk(cos_scores, k=top_k)[1].tolist()
+    # Perform the search using FAISS
+    k = 10  # Number of top results
+    distances, indices = index.search(query_embedding, k)
 
     # Extract relevant context based on top indices
+    top_indices = indices[0]
     relevant_context = [chunks[idx].strip() for idx in top_indices if idx < len(chunks)]
 
     if not relevant_context:  # Handle case where no context is found
