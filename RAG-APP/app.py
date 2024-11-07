@@ -1,10 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from werkzeug.utils import secure_filename
 import os
-import torch
-import ollama
-from openai import OpenAI, AzureOpenAI
 from dotenv import load_dotenv
 
 import json
