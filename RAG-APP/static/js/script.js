@@ -115,15 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify({ query: userQuery, filename: filename })
         });
-        // fix not working
-        const context = await fetch('/api/query', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ query: userQuery, filename: filename })
-        });
-
+        
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -131,8 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
          // fix not working
         const data = await response.json();
-        const contextData = await context.json();
-        return data, contextData;
+
+        return data;
     }
 
     // Handles file selection and upload
