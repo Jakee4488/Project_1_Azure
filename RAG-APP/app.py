@@ -10,6 +10,7 @@ from helpers.pdf_utils import process_uploaded_pdf
 from helpers.query_utils import query_documents_helper
 
 # Load environment variables from .env file
+
 load_dotenv()
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
