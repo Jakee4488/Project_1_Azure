@@ -5,3 +5,4 @@ RAG-APP/uploads/
 RAG-APP/chunks/
 RAG-APP/embeddings/
 RAG-APP/.env
+RAG-APP/__pycache__/

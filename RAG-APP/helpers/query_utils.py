@@ -5,10 +5,10 @@ import numpy as np
 from flask import jsonify
 from openai import AzureOpenAI
 from .embedding_utils import get_azure_embedding
-from constants import EMBEDDINGS_DIR, CHUNKS_DIR, BASE_DIR, UPLOAD_FOLDER, ALLOWED_EXTENSIONS, AZURE_API_ENDPOINT, AZURE_API_MODEL
+from constants import EMBEDDINGS_DIR, CHUNKS_DIR, BASE_DIR, UPLOAD_FOLDER, ALLOWED_EXTENSIONS, AZURE_API_ENDPOINT, AZURE_API_MODEL,AZURE_APIKEY
 
 # Set up constants and configurations
-subscription_key = os.getenv('AZURE_APIKEY')
+subscription_key = AZURE_APIKEY
 embeddings_dir = EMBEDDINGS_DIR
 chunks_dir = CHUNKS_DIR
 base_dir = BASE_DIR
