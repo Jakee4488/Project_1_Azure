@@ -23,6 +23,7 @@ html, body {
 ========================================================= */
 :root {
     /* Light Mode Variables */
+<<<<<<< HEAD
     --background-color: #f0f2f5;
     --sidebar-bg: #ffffff;
     --text-color: #1e1e1e;
@@ -36,6 +37,22 @@ html, body {
     --message-bg-bot: #f1f0f0;
     --message-text-user: #ffffff;
     --message-text-bot: #1e1e1e;
+=======
+    --bg-color: #FFFFFF;
+    --sidebar-bg: #F3F4F6;
+    --text-color: #1F2937;
+    --accent-color: #6B7280;
+    --button-bg: #E5E7EB;
+    --button-text: #374152;
+    --active-bg: #D1D5DB;
+    --primary-color: #1f16cf;
+    --input-bg: #F9FAFB;
+    --input-text: #1F2937;
+    --message-bg-user: var(--primary-color);
+    --message-bg-bot: #F3F4F6;
+    --message-text-user: #FFFFFF;
+    --message-text-bot: #1F2937;
+>>>>>>> 4bdecd27b340f0771654812c466c6e6783ed1539
     --shadow-color: rgba(0, 0, 0, 0.1);
     --card-shadow: 0 4px 12px var(--shadow-color);
     --hover-bg: rgba(0, 123, 255, 0.1);

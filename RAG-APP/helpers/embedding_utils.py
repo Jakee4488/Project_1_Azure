@@ -1,7 +1,7 @@
 import os
 import requests
 import json
-from constants import BASE_DIR, EMBEDDINGS_DIR, CHUNKS_DIR, AZURE_EMBEDDING_MODEL, AZURE_API_ENDPOINT, AZURE_API_KEY
+from constants import BASE_DIR, EMBEDDINGS_DIR, CHUNKS_DIR, AZURE_EMBEDDING_MODEL, AZURE_API_ENDPOINT, AZURE_APIKEY
 
 # Define paths for embeddings and chunks
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -14,7 +14,7 @@ os.makedirs(EMBEDDINGS_DIR, exist_ok=True)
 def get_azure_embedding(content):
     headers = {
         "Content-Type": "application/json",
-        "api-key": AZURE_API_KEY,
+        "api-key": AZURE_APIKEY,
     }
     data = {
         "input": content
