@@ -1,33 +1,43 @@
-// script.js
+// script.js - Enhanced Functionality for Dark/Light Mode and Responsive Sidebar
 
 document.addEventListener('DOMContentLoaded', () => {
+    // =======================
+    // 1. Element References
+    // =======================
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
     const chatWindow = document.getElementById('chat-window');
     const themeToggleBtn = document.getElementById('theme-toggle');
     const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebarToggleMobile = document.getElementById('sidebarToggleMobile');
-    const sidebarOpenBtn = document.getElementById('sidebarOpen'); // Ensure this ID exists
+    const sidebarToggleMobile = document.getElementById('sidebarToggleMobile'); // If applicable
+    const sidebarOpenBtn = document.getElementById('sidebarOpen');
     const voiceBtn = document.getElementById('voice-btn');
     const fileBtn = document.getElementById('file-btn');
     const fileInput = document.getElementById('file-input');
     const overlay = document.querySelector('.overlay');
     const sidebar = document.querySelector('.sidebar');
-    const welcomeScreen = document.getElementById('welcome-screen');
     const body = document.body;
-    chatForm.addEventListener('submit', handleFormSubmit);
+    const mainContent = document.querySelector('.flex-grow-1.d-flex.flex-column');
 
+    // =======================
+    // 2. State Variables
+    // =======================
     let isBotResponding = false;
     let recognition;
     let uploadedFilename = ''; // State variable to store the filename
 
+    // =======================
+    // 3. Initialization Functions
+    // =======================
     initializeSpeechRecognition();
     initializeEventListeners();
-    loadChatHistory();
+    loadChatHistory(); // Ensure this is called once
     handleResponsiveSidebar();
     loadTheme();
 
-    // Initializes Speech Recognition if supported
+    // =======================
+    // 4. Speech Recognition
+    // =======================
     function initializeSpeechRecognition() {
         if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -36,94 +46,126 @@ document.addEventListener('DOMContentLoaded', () => {
             recognition.lang = 'en-US';
 
             voiceBtn.addEventListener('click', () => {
-                recognition.start();
-                toggleVoiceIcon(true);
+                if (recognition) {
+                    recognition.start();
+                    toggleVoiceIcon(true);
+                    console.log('Voice recognition started');
+                }
             });
 
             recognition.addEventListener('result', (event) => {
-                userInput.value = event.results[0][0].transcript;
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                console.log('Voice recognition result:', transcript);
                 toggleVoiceIcon(false);
             });
 
-            recognition.addEventListener('end', () => toggleVoiceIcon(false));
-            recognition.addEventListener('error', () => toggleVoiceIcon(false));
+            recognition.addEventListener('end', () => {
+                toggleVoiceIcon(false);
+                console.log('Voice recognition ended');
+            });
+
+            recognition.addEventListener('error', (event) => {
+                toggleVoiceIcon(false);
+                console.error('Voice recognition error:', event.error);
+                alert(`Voice recognition error: ${event.error}`);
+            });
         } else {
             voiceBtn.style.display = 'none';
+            console.warn('Speech Recognition API not supported in this browser.');
         }
     }
 
-    // Toggles the voice icon between listening and not listening states
     function toggleVoiceIcon(isListening) {
         voiceBtn.innerHTML = isListening ? `<i class="bi bi-mic-mute-fill"></i>` : `<i class="bi bi-mic-fill"></i>`;
     }
 
-    // Initialize Event Listeners
+    // =======================
+    // 5. Event Listeners
+    // =======================
     function initializeEventListeners() {
+        // Sidebar Toggle for Desktop
         sidebarToggle.addEventListener('click', () => toggleSidebar());
+
+        // Sidebar Open Button for Mobile
         sidebarOpenBtn.addEventListener('click', () => openSidebar());
-        sidebarToggleMobile.addEventListener('click', () => showSidebarMobile());
+
+        // Sidebar Toggle for Mobile
+        if (sidebarToggleMobile) {
+            sidebarToggleMobile.addEventListener('click', () => toggleSidebarMobile());
+        }
+
+        // Overlay Click to Close Sidebar on Mobile
         overlay.addEventListener('click', () => closeSidebarMobile());
+
+        // Theme Toggle Button
         themeToggleBtn.addEventListener('click', () => toggleTheme());
+
+        // Window Resize Event for Responsive Sidebar
         window.addEventListener('resize', handleResponsiveSidebar);
-        chatForm.addEventListener('submit', handleFormSubmit);
+
+        // Chat Form Submission
+        chatForm.addEventListener('submit', handleFormSubmit); // Ensure it's attached only once
+
+        // File Attachment
         fileBtn.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', handleFileSelection);
-        document.getElementById('clearChatBtn').addEventListener('click', clearChat);
-        document.getElementById('newChatBtn').addEventListener('click', newChat);
+
+        // Clear Chat and New Chat Buttons
+        const clearChatBtn = document.getElementById('clearChatBtn');
+        const newChatBtn = document.getElementById('newChatBtn');
+        if (clearChatBtn) clearChatBtn.addEventListener('click', clearChat);
+        if (newChatBtn) newChatBtn.addEventListener('click', newChat);
     }
 
-    // Handles form submission for chat input
+    // =======================
+    // 6. Chat Functionality
+    // =======================
     async function handleFormSubmit(e) {
         e.preventDefault();
         const message = userInput.value.trim();
         if (message === '') return;
-    
-        // Remove the welcome screen when the user sends their first message
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'none';
-        }
-    
-        appendMessage('user', message);
-        saveMessage('user', message);
+
+        appendMessage('user', message, null, true);
         userInput.value = '';
         userInput.focus();
-    
+
         if (!isBotResponding) {
             isBotResponding = true;
-            appendMessage('bot', 'loading');
-    
+            appendMessage('bot', 'loading', null, false);
+
             try {
-                const response = await queryDocuments(message, uploadedFilename);
+                const response = await queryBotAPI(message);
                 const loadingMessage = chatWindow.querySelector('.message.bot.loading');
                 if (loadingMessage) loadingMessage.remove();
-                appendMessage('bot', response.response);
+                appendMessage('bot', response.response, null, true);
             } catch (error) {
                 console.error('Error:', error);
-                appendMessage('bot', 'Sorry, something went wrong.');
+                const loadingMessage = chatWindow.querySelector('.message.bot.loading');
+                if (loadingMessage) loadingMessage.remove();
+                appendMessage('bot', 'Sorry, something went wrong.', null, true);
             } finally {
                 isBotResponding = false;
             }
         }
     }
 
-    // Queries the documents with the user's query
-    async function queryDocuments(userQuery, filename) {
+    // Function to query the bot API
+    async function queryBotAPI(userMessage) {
         const response = await fetch('/api/query', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ query: userQuery, filename: filename })
+            body: JSON.stringify({ query: userMessage, filename: uploadedFilename })
         });
-        
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to query documents');
+            throw new Error(errorData.error || 'Failed to query bot API');
         }
-         // fix not working
-        const data = await response.json();
 
+        const data = await response.json();
         return data;
     }
 
@@ -131,16 +173,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFileSelection(e) {
         const file = e.target.files[0];
         if (file) {
-            appendMessage('user', 'Sent a file:', file);
+            appendMessage('user', 'Sent a file:', file, true);
             fileInput.value = '';
-    
+
             const formData = new FormData();
             formData.append('file', file);
-    
+
             if (!isBotResponding) {
-                appendMessage('bot', 'loading');
                 isBotResponding = true;
-    
+                appendMessage('bot', 'loading', null, false);
+
                 fetch('/api/upload', {
                     method: 'POST',
                     body: formData
@@ -149,69 +191,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(data => {
                     const loadingMessage = chatWindow.querySelector('.message.bot.loading');
                     if (loadingMessage) loadingMessage.remove();
-                    appendMessage('bot', data.message);
+                    appendMessage('bot', data.message, null, true);
                     uploadedFilename = data.filename.replace('.pdf', ''); // Store the uploaded filename without .pdf
                     console.log('Uploaded filename:', uploadedFilename);
                     isBotResponding = false;
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    const loadingMessage = chatWindow.querySelector('.message.bot.loading');
+                    if (loadingMessage) loadingMessage.remove();
+                    appendMessage('bot', 'Failed to upload the file.', null, true);
                     isBotResponding = false;
                 });
             }
         }
     }
-    // Toggles the sidebar visibility
-    function toggleSidebar() {
-        sidebar.classList.toggle('hidden');
-        updateMainContentLayout();
-        toggleOpenButton();
-    }
-
-    // Opens the sidebar
-    function openSidebar() {
-        sidebar.classList.remove('hidden');
-        updateMainContentLayout();
-        toggleOpenButton();
-    }
-
-    // Shows the sidebar on mobile
-    function showSidebarMobile() {
-        sidebar.classList.add('show');
-        overlay.classList.add('show');
-    }
-
-    // Closes the sidebar on mobile
-    function closeSidebarMobile() {
-        sidebar.classList.remove('show');
-        overlay.classList.remove('show');
-    }
-
-    // Handles responsive sidebar behavior
-    function handleResponsiveSidebar() {
-        if (window.innerWidth <= 768) {
-            sidebar.classList.add('hidden');
-            updateMainContentLayout();
-            toggleOpenButton();
-        } else {
-            sidebar.classList.remove('hidden');
-            updateMainContentLayout();
-            toggleOpenButton();
-        }
-    }
-
-    // Updates the main content layout based on sidebar visibility
-    function updateMainContentLayout() {
-        const mainContent = document.querySelector('.flex-grow-1.d-flex.flex-column');
-        const isSidebarHidden = sidebar.classList.contains('hidden');
-        mainContent.style.marginLeft = isSidebarHidden ? '0' : '260px';
-        mainContent.style.width = isSidebarHidden ? '100%' : 'calc(100% - 260px)';
-    }
 
     // Appends a message to the chat window
-    function appendMessage(sender, text, file = null) {
+    // Added 'shouldSave' parameter to control saving to localStorage
+    function appendMessage(sender, text, file = null, shouldSave = true) {
         const messageElement = document.createElement('div');
-        messageElement.classList.add('message', sender, 'animate__animated', 'animate__fadeIn');
+        messageElement.classList.add('message', sender);
 
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
@@ -220,6 +220,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const filePreview = createFilePreview(file);
             messageContent.innerHTML = text;
             messageContent.appendChild(filePreview);
+        } else if (text === 'loading') {
+            // Display typing indicator with enhanced animation
+            messageElement.classList.add('loading');
+            messageContent.innerHTML = `<div class="typing-indicator">
+                                            <span></span><span></span><span></span>
+                                        </div>`;
         } else {
             messageContent.innerText = text;
         }
@@ -227,10 +233,21 @@ document.addEventListener('DOMContentLoaded', () => {
         addTimestamp(messageContent);
         messageElement.appendChild(messageContent);
         if (sender === 'bot') addBotAvatar(messageElement);
+
+        // Apply Animate.css classes based on sender
+        if (sender === 'bot') {
+            messageElement.classList.add('animate__bounceInRight');
+        } else if (sender === 'user') {
+            messageElement.classList.add('animate__fadeInLeft');
+        }
+
         chatWindow.appendChild(messageElement);
 
         chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
-        saveMessage(sender, text, file);
+
+        if (shouldSave) {
+            saveMessage(sender, text, file);
+        }
     }
 
     // Adds a bot avatar to the message element
@@ -246,8 +263,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const timestamp = document.createElement('div');
         timestamp.classList.add('timestamp');
         const now = new Date();
-        timestamp.innerText = `${now.getHours() % 12 || 12}:${now.getMinutes().toString().padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+        timestamp.innerText = `${formatHours(now.getHours())}:${now.getMinutes().toString().padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
         messageContent.appendChild(timestamp);
+    }
+
+    // Formats hours to 12-hour format
+    function formatHours(hours) {
+        return hours % 12 || 12;
     }
 
     // Creates a file preview element
@@ -255,112 +277,64 @@ document.addEventListener('DOMContentLoaded', () => {
         const previewContainer = document.createElement('div');
         previewContainer.classList.add('file-preview', 'mt-2');
 
-        if (file.type.startsWith('image/')) {
+        if (file && file.type && file.type.startsWith('image/')) { // Added file.type check
             const img = document.createElement('img');
             img.src = URL.createObjectURL(file);
             img.alt = file.name;
             img.onload = () => URL.revokeObjectURL(img.src);
             previewContainer.appendChild(img);
-        } else {
+        } else if (file) {
             const fileIcon = document.createElement('i');
             fileIcon.classList.add('bi', 'bi-file-earmark', 'file-icon', 'me-2');
             fileIcon.style.fontSize = '2rem';
             previewContainer.appendChild(fileIcon);
         }
 
-        const fileInfo = document.createElement('div');
-        fileInfo.classList.add('file-info');
-        fileInfo.innerHTML = `<span>${file.name}</span><span>${(file.size / 1024).toFixed(2)} KB</span>`;
-        previewContainer.appendChild(fileInfo);
-
-        return previewContainer;
-    }
-
-    // Simulates typing indicator
-    function simulateTyping(callback) {
-        const typingIndicator = document.createElement('div');
-        typingIndicator.classList.add('typing-indicator');
-        typingIndicator.innerHTML = `<span></span><span></span><span></span>`;
-        chatWindow.appendChild(typingIndicator);
-
-        setTimeout(() => {
-            chatWindow.removeChild(typingIndicator);
-            callback();
-        }, 2000);
-    }
-
-    // Gets a bot response based on user message
-    function getBotResponse(userMessage) {
-        if (userMessage === 'file') return "I see you've sent a file. How can I assist you with it?";
-
-        const responses = {
-            'hello': "Hello! How can I assist you today?",
-            'hi': "Hello! How can I assist you today?",
-            'help': "Sure, I'm here to help! What do you need assistance with?",
-            'thank': "You're welcome! Let me know if you need anything else.",
-            'weather': "I can't check the weather, but you can try a weather app or website!",
-            'time': `Current time is ${new Date().toLocaleTimeString()}.`
-        };
-
-        const lowerMessage = userMessage.toLowerCase();
-        for (let key in responses) {
-            if (lowerMessage.includes(key)) return responses[key];
+        if (file) {
+            const fileInfo = document.createElement('div');
+            fileInfo.classList.add('file-info');
+            fileInfo.innerHTML = `<span>${file.name}</span><span>${(file.size / 1024).toFixed(2)} KB</span>`;
+            previewContainer.appendChild(fileInfo);
         }
 
-        const randomResponses = [
-            "I'm here to help you!",
-            "Can you please elaborate?",
-            "That's interesting!",
-            "Could you tell me more?",
-            "Absolutely!",
-            "Let's discuss that further.",
-            "Why do you think that is?",
-            "How does that make you feel?",
-            "Can you provide more details?"
-        ];
-        return randomResponses[Math.floor(Math.random() * randomResponses.length)];
+        return previewContainer;
     }
 
     // Saves a message to local storage
     function saveMessage(sender, text, file = null) {
         const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
-        chatHistory.push({ sender, text, timestamp: new Date().toISOString() });
+        chatHistory.push({ sender, text, timestamp: new Date().toISOString(), file: file });
         localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
     }
 
     // Loads chat history from local storage
     function loadChatHistory() {
         const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
-        if (chatHistory.length === 0) {
-            // Only show welcome message if there's no chat history
-            appendMessage('bot', 'Welcome! How can I help you today?');
-        } else {
-            chatHistory.forEach(message => appendMessage(message.sender, message.text));
-        }
+        chatWindow.innerHTML = ''; // Clear chat window to prevent duplication
+        chatHistory.forEach(message => {
+            appendMessage(message.sender, message.text, message.file || null, false);
+        });
     }
 
     // Clears the chat history
     function clearChat() {
         localStorage.removeItem('chatHistory');
         chatWindow.innerHTML = '';
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'flex';
-        }
     }
 
     // Starts a new chat
     function newChat() {
-        chatWindow.innerHTML = '';
-        localStorage.removeItem('chatHistory');
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'flex';
-        }
+        clearChat();
+        // If you want to initialize a new chat with a starting message, you can add it here.
     }
 
+    // =======================
+    // 7. Theme Functionality
+    // =======================
     // Toggles the theme between light and dark modes
     function toggleTheme() {
         const isDarkMode = document.body.classList.toggle('dark-mode');
-        themeToggleBtn.innerHTML = isDarkMode ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-fill"></i>';
+        themeToggleBtn.innerHTML = isDarkMode ? '<i class="bi bi-sun-fill me-2"></i> Light Mode' : '<i class="bi bi-moon-fill me-2"></i> Dark Mode';
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     }
 
@@ -369,45 +343,71 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.body.classList.add('dark-mode');
-            themeToggleBtn.innerHTML = '<i class="bi bi-sun-fill"></i>';
+            themeToggleBtn.innerHTML = '<i class="bi bi-sun-fill me-2"></i> Light Mode';
+        } else {
+            themeToggleBtn.innerHTML = '<i class="bi bi-moon-fill me-2"></i> Dark Mode';
         }
     }
 
-    // Toggles the open button for the sidebar
+    // =======================
+    // 8. Sidebar Functionality
+    // =======================
+    function toggleSidebar() {
+        sidebar.classList.toggle('hidden');
+        body.classList.toggle('sidebar-hidden'); // For adjusting main content
+        updateMainContentLayout();
+        toggleOpenButton();
+    }
+
+    function openSidebar() {
+        sidebar.classList.remove('hidden');
+        body.classList.remove('sidebar-hidden');
+        updateMainContentLayout();
+        toggleOpenButton();
+    }
+
+    function toggleSidebarMobile() {
+        sidebar.classList.toggle('show');
+        overlay.classList.toggle('show');
+    }
+
+    function closeSidebarMobile() {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+    }
+
+    function handleResponsiveSidebar() {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.add('hidden');
+            body.classList.add('sidebar-hidden');
+            updateMainContentLayout();
+            toggleOpenButton();
+        } else {
+            sidebar.classList.remove('hidden');
+            body.classList.remove('sidebar-hidden');
+            updateMainContentLayout();
+            toggleOpenButton();
+            // Ensure the sidebar is visible and overlay is hidden on desktop
+            closeSidebarMobile();
+        }
+    }
+
+    function updateMainContentLayout() {
+        const isSidebarHidden = sidebar.classList.contains('hidden');
+        if (isSidebarHidden) {
+            mainContent.style.marginLeft = '0';
+            mainContent.style.width = '100%';
+        } else {
+            mainContent.style.marginLeft = '250px';
+            mainContent.style.width = 'calc(100% - 250px)';
+        }
+    }
+
     function toggleOpenButton() {
         if (sidebar.classList.contains('hidden')) {
             sidebarOpenBtn.classList.add('active');
         } else {
             sidebarOpenBtn.classList.remove('active');
         }
-    }
-
-    // Handle Suggested Prompts
-    const promptButtons = document.querySelectorAll('.prompt-btn');
-    promptButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const promptText = button.getAttribute('data-prompt');
-            handlePromptAction(promptText);
-        });
-    });
-
-    // Handles predefined prompt actions
-    function handlePromptAction(promptText) {
-        // Remove the welcome screen when the user clicks a suggested prompt
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'none';
-        }
-
-        // Handle predefined prompts
-        appendMessage('user', promptText);
-        if (promptText === 'Tell me a joke') {
-            appendMessage('bot', 'Why don’t skeletons fight each other? They don’t have the guts.');
-        } else if (promptText === 'Surprise me') {
-            appendMessage('bot', 'Did you know? Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3000 years old and still perfectly edible.');
-        } else if (promptText === 'Talk like Gen-Z') {
-            appendMessage('bot', 'Yo fam, this place is lit! What’s poppin’ today?');
-        }
-        saveMessage('user', promptText);
-        saveMessage('bot', getBotResponse(promptText));
     }
 });
