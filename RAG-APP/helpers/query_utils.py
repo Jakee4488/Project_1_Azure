@@ -17,23 +17,19 @@ allowed_extensions = ALLOWED_EXTENSIONS
 endpoint = AZURE_API_ENDPOINT
 deployment = AZURE_API_MODEL
 
-# Helper function to query documents
-def query_documents_helper(user_query, filename):
-    # Define paths for chunks and embeddings
-    chunks_path = os.path.join(chunks_dir, f'{filename}_vault.txt')
-    embeddings_path = os.path.join(embeddings_dir, f'{filename}_embeddings.json')
 
-    # Check if the necessary files exist
-    if not os.path.exists(chunks_path) or not os.path.exists(embeddings_path):
-        return jsonify({'error': 'Chunks or embeddings file not found'}), 404
 
-    # Read chunks and embeddings data
-    with open(chunks_path, 'r', encoding='utf-8') as chunks_file:
-        chunks = chunks_file.readlines()
+def load_chunks_and_embeddings(chunks_path, embeddings_path):
+            with open(chunks_path, 'r', encoding='utf-8') as chunks_file:
+                chunks = chunks_file.readlines()
 
-    with open(embeddings_path, 'r', encoding='utf-8') as embeddings_file:
-        embeddings = json.load(embeddings_file)
+            with open(embeddings_path, 'r', encoding='utf-8') as embeddings_file:
+                embeddings = json.load(embeddings_file)
 
+            return chunks, embeddings
+
+
+def get_top_indices(user_query, embeddings, k=10):
     # Convert embeddings to a NumPy array
     embeddings = np.array(embeddings, dtype=np.float32) # Shape: (num_chunks, embedding_dim)
     embedding_dim = embeddings.shape[1]
@@ -53,10 +49,22 @@ def query_documents_helper(user_query, filename):
 
     # Perform the search using FAISS
     k = 10  # Number of top results
-    distances, indices = index.search(query_embedding, k)
+    _ ,indices = index.search(query_embedding, k)
 
+    return indices[0]
+
+
+# Helper function to query documents
+def query_documents_helper(user_query,filename):
+
+    chunks_path = os.path.join(chunks_dir, f'{filename}_vault.txt')
+    embeddings_path = os.path.join(embeddings_dir, f'{filename}_embeddings.json')
+
+    chunks, embeddings = load_chunks_and_embeddings(chunks_path, embeddings_path)
+    
     # Extract relevant context based on top indices
-    top_indices = indices[0]
+    top_indices = get_top_indices(user_query, embeddings)
+
     relevant_context = [chunks[idx].strip() for idx in top_indices if idx < len(chunks)]
 
     if not relevant_context:  # Handle case where no context is found
