@@ -1,60 +1,102 @@
-# Project_1_Azure
-
-RAG project with Azure platform
-
-## Description
-
-This project is a RAG (Retrieve and Generate) implementation designed to work with the Azure platform. It leverages a combination of JavaScript, CSS, Python, HTML, and Docker.
+# RAG Chat Application
 
 ## Table of Contents
+1. [Project Overview](#project-overview)
+2. [Architecture](#architecture)
+3. [Implementation Details](#implementation-details)
+4. [Setup Guide](#setup-guide)
+5. [API Reference](#api-reference)
+6. [Development](#development)
+7. [Deployment](#deployment)
+8. [Troubleshooting](#troubleshooting)
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Recent Updates](#recent-updates)
-- [Contributing](#contributing)
-- [License](#license)
+## Project Overview
+The RAG (Retrieval-Augmented Generation) Chat Application is a sophisticated web application that combines document processing, vector embeddings, and natural language processing to provide intelligent responses based on uploaded documents.
 
-## Installation
+### Key Features
+- Document processing (PDF, TXT, DOC, DOCX)
+- Azure OpenAI integration for intelligent responses
+- Real-time chat with conversation history
+- Dark/Light theme support
+- Voice input capabilities
+- Document preview
+- Session management
+- Responsive design
 
-To set up this project locally, follow these steps:
+## Architecture
 
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/Jakee4488/Project_1_Azure.git
-    ```
+### System Components
+1. **Frontend**
+   - HTML5/CSS3 with Bootstrap 5
+   - Vanilla JavaScript
+   - Responsive mobile-first design
+   - WebSocket for real-time chat
 
-2. Navigate to the project directory:
-    ```sh
-    cd Project_1_Azure
-    ```
+2. **Backend**
+   - Flask web server
+   - Azure OpenAI API integration
+   - FAISS vector database
+   - Document processing pipeline
+   - WebSocket server
 
-3. Install the necessary dependencies:
-    ```sh
-    npm install
-    ```
+3. **Storage**
+   - File system for documents
+   - Vector embeddings store
+   - Session data store
 
-## Usage
+### Data Flow
+1. Document Upload → Processing → Vector Storage
+2. User Query → Context Retrieval → AI Response
+3. Real-time Updates → WebSocket → UI Refresh
 
-To start the project, follow these steps:
+## Implementation Details
 
-1. Run the application:
-    ```sh
-    npm start
-    ```
+### Core Services
 
-2. Open your browser and navigate to [http://localhost:3000](http://localhost:3000).
+#### Document Processor
+- File validation and sanitization
+- Text extraction (PDF, DOC, TXT)
+- Content chunking
+- Vector embedding generation
+- FAISS indexing
 
-## Recent Updates
+#### Query Engine
+- Context retrieval
+- Prompt engineering
+- Azure OpenAI integration
+- Response generation
 
-- **API edits**: Improvements made to the API functionality.
-- **DockerFile added**: Added Docker support for containerization. Ensure to rename the localhost to 0.0.0.0 for working within the container.
+#### Chat Manager
+- Session handling
+- Message history
+- Real-time updates
+- Voice processing
 
-For more detailed commit history, visit [Commits](https://github.com/Jakee4488/Project_1_Azure/commits).
+## Setup Guide
 
-## Contributing
+### Prerequisites
+- Python 3.12+
+- Node.js 18+
+- Docker
+- Azure OpenAI API access
+- 8GB+ RAM
+- 10GB+ storage
 
-Contributions are welcome! Please open an issue or submit a pull request for any improvements or suggestions.
+### Installation
+1. Clone repository
+2. Install dependencies
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Configure environment
+   ```bash
+   cp .env.example .env
+   # Edit .env with your credentials
+   ```
+4. Initialize database
+   ```bash
+   python init_db.py
+   ```
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+### Configuration
+Required environment variables:
