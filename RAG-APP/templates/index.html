@@ -24,6 +24,12 @@
         rel="stylesheet"
     />
 
+    <!-- Animate.css -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="./static/css/styles.css" />
 
@@ -74,8 +80,18 @@
                             <span>Clear Chat</span>
                         </a>
                     </li>
+                    <!-- Theme Toggle Button -->
                     <li class="nav-item mb-2">
-                        <a href="#" class="nav-link" data-tooltip="Settings">
+                        <button
+                            id="theme-toggle"
+                            class="btn btn-outline-secondary w-100 text-start"
+                            aria-label="Toggle Theme"
+                        >
+                            <i class="bi bi-moon-fill me-2"></i> Dark Mode
+                        </button>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="#" class="nav-link" data-tooltip="Settings" id="settingsBtn">
                             <i class="bi bi-gear-fill"></i>
                             <span>Settings</span>
                         </a>
@@ -107,17 +123,6 @@
             <i class="bi bi-list"></i>
         </button>
 
-        <div class="welcome-screen" id="welcome-screen">
-            <h1>Welcome to Project 1</h1>
-            <p>What do you wanna do today?</p>
-            <div class="suggested-prompts">
-                <button class="btn btn-outline-primary prompt-btn" data-prompt="Tell me a joke">Tell me a joke</button>
-                <button class="btn btn-outline-primary prompt-btn" data-prompt="Surprise me">Surprise me</button>
-                <button class="btn btn-outline-primary prompt-btn" data-prompt="Talk like Gen-Z">Talk like Gen-Z</button>
-            </div>
-        </div>
-        
-
         <!-- Main Chat Area -->
         <div class="flex-grow-1 d-flex flex-column">
             <!-- Header -->
@@ -134,15 +139,16 @@
                         <i class="bi bi-list"></i>
                     </button>
                     <h5 class="mb-0">
-                        <i class="bi bi-chat-dots-fill me-2" style="margin-left: 60px;"></i> Project 1
+                        <i class="bi bi-chat-dots-fill me-2"></i> Project 1
                     </h5>
                 </div>
+                <!-- Settings Button -->
                 <button
-                    id="theme-toggle"
+                    id="settingsHeaderBtn"
                     class="btn btn-outline-secondary btn-sm"
-                    aria-label="Toggle Theme"
+                    aria-label="Settings"
                 >
-                    <i class="bi bi-moon-fill me-2"></i> Dark Mode
+                    <i class="bi bi-gear-fill me-2"></i> Settings
                 </button>
             </header>
 
@@ -188,7 +194,7 @@
 
                     <!-- Send Button -->
                     <button
-                        class="btn btn-primary"
+                        class="btn btn-primary send-btn"
                         type="submit"
                         aria-label="Send Message"
                     >
