@@ -31,7 +31,11 @@ def load_chunks_and_embeddings(chunks_path, embeddings_path):
     return chunks, np.array(embeddings, dtype=np.float32), None
 
 
-def get_top_indices(user_query, embeddings, k=10):
+import faiss
+import numpy as np
+import os
+
+def get_top_indices(user_query, embeddings, filename ,k=10):
     """Finds the top k relevant indices based on cosine similarity using FAISS."""
     embedding_dim = embeddings.shape[1]
     faiss.normalize_L2(embeddings)  # Normalize embeddings once
@@ -39,6 +43,11 @@ def get_top_indices(user_query, embeddings, k=10):
     # Initialize and populate FAISS index
     index = faiss.IndexFlatL2(embedding_dim)
     index.add(embeddings)
+
+    # Save the index to a file
+    if not os.path.exists('vector_store'):
+        os.makedirs('vector_store')
+    faiss.write_index(index, f'vector_store/{filename}_vector_store.index')
 
     # Obtain and normalize query embedding
     query_embedding = np.array(get_azure_embedding(user_query), dtype=np.float32).reshape(1, -1)
@@ -62,7 +71,7 @@ def query_documents_helper(user_query, filename):
         return jsonify({'error': 'Chunks or embeddings file is missing'}), 404
 
     # Extract relevant context based on top indices
-    top_indices = get_top_indices(user_query, embeddings)
+    top_indices = get_top_indices(user_query, embeddings,filename)
     relevant_context = [chunks[idx].strip() for idx in top_indices if idx < len(chunks)]
     if not relevant_context:
         return jsonify({'error': 'No relevant context found'}), 404
