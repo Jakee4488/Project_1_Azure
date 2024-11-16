@@ -1,3 +1,5 @@
+# query_utils.py
+
 import os
 import json
 import faiss  # FAISS library
@@ -66,7 +68,12 @@ def get_top_indices(user_query, embeddings, k=10):
 
 
 def query_documents_helper(user_query, filename=None):
-    """Processes user query by fetching relevant context and querying Azure OpenAI."""
+    """
+    Processes user query by fetching relevant context if a filename is provided
+    and querying Azure OpenAI. Provides general responses when no context is available.
+    """
+    relevant_context = []
+
     if filename:
         chunks_path = os.path.join(chunks_dir, f'{filename}_vault.txt')
         embeddings_path = os.path.join(embeddings_dir, f'{filename}_embeddings.json')
@@ -74,15 +81,18 @@ def query_documents_helper(user_query, filename=None):
         # Load chunks and embeddings
         chunks, embeddings, load_error = load_chunks_and_embeddings(chunks_path, embeddings_path)
         if load_error:
+            logger.error(f"Error loading files: {load_error}")
             return jsonify({'error': f'File load error: {load_error}'}), 500
         if embeddings is None or chunks is None:
+            logger.error('Chunks or embeddings file is missing')
             return jsonify({'error': 'Chunks or embeddings file is missing'}), 404
 
         # Extract relevant context based on top indices
         top_indices = get_top_indices(user_query, embeddings)
         relevant_context = [chunks[idx].strip() for idx in top_indices if idx < len(chunks)]
+        logger.info(f"Contextualizing query with filename: {filename}")
     else:
-        relevant_context = []  # No context if no filename is provided
+        logger.info("No filename provided. Proceeding with general response.")
 
     # Set up the Azure OpenAI client
     try:
@@ -102,10 +112,12 @@ def query_documents_helper(user_query, filename=None):
     ]
 
     if relevant_context:
-        # Optionally, you can incorporate the context into the system prompt or as additional user messages
-        # Here's one way to append the context to the user message
+        # Incorporate the context into the user message
         combined_query = f"{user_query}\n\nContext:\n" + "\n".join(relevant_context)
         chat_prompt[-1]["content"] = combined_query
+        logger.info("Added contextual information to the prompt.")
+    else:
+        logger.info("No contextual information added to the prompt.")
 
     # Request completion from the Azure OpenAI client
     try:
@@ -119,6 +131,7 @@ def query_documents_helper(user_query, filename=None):
             presence_penalty=0
         )
         response_content = completion.choices[0].message.content
+        logger.info("Successfully obtained response from Azure OpenAI.")
     except Exception as e:
         logger.error(f"Azure API call failed: {e}")
         return jsonify({'error': f'Azure API call failed: {str(e)}'}), 500
