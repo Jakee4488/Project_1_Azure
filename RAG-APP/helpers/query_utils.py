@@ -7,15 +7,7 @@ import numpy as np
 from flask import jsonify
 from openai import AzureOpenAI
 from .embedding_utils import get_azure_embedding
-from constants import (
-    EMBEDDINGS_DIR,
-    CHUNKS_DIR,
-    ALLOWED_EXTENSIONS,
-    AZURE_API_ENDPOINT,
-    AZURE_API_MODEL,
-    AZURE_APIKEY
-)
-import logging
+from constants import EMBEDDINGS_DIR, CHUNKS_DIR, ALLOWED_EXTENSIONS, AZURE_API_ENDPOINT, AZURE_API_MODEL, AZURE_APIKEY,AZURE_CLIENT_CONFIG
 
 # Set up constants and configurations
 subscription_key = AZURE_APIKEY
@@ -49,7 +41,11 @@ def load_chunks_and_embeddings(chunks_path, embeddings_path):
     return chunks, np.array(embeddings, dtype=np.float32), None
 
 
-def get_top_indices(user_query, embeddings, k=10):
+import faiss
+import numpy as np
+import os
+
+def get_top_indices(user_query, embeddings, filename, k=10):
     """Finds the top k relevant indices based on cosine similarity using FAISS."""
     embedding_dim = embeddings.shape[1]
     faiss.normalize_L2(embeddings)  # Normalize embeddings once
@@ -96,11 +92,8 @@ def query_documents_helper(user_query, filename=None):
 
     # Set up the Azure OpenAI client
     try:
-        client = AzureOpenAI(
-            azure_endpoint=endpoint,
-            api_key=subscription_key,
-            api_version="2024-05-01-preview",
-        )
+        client = AZURE_CLIENT_CONFIG
+
     except Exception as e:
         logger.error(f"Azure client setup failed: {e}")
         return jsonify({'error': f'Azure client setup failed: {str(e)}'}), 500
@@ -121,17 +114,12 @@ def query_documents_helper(user_query, filename=None):
 
     # Request completion from the Azure OpenAI client
     try:
-        completion = client.chat.completions.create(
-            model=deployment,
-            messages=chat_prompt,
-            max_tokens=900,
-            temperature=0.7,
-            top_p=0.95,
-            frequency_penalty=0,
-            presence_penalty=0
-        )
+        CHAT_COMPLETION_CONFIG.update({"messages": chat_prompt})
+
+        completion = client.chat.completions.create(**CHAT_COMPLETION_CONFIG)
+        
         response_content = completion.choices[0].message.content
-        logger.info("Successfully obtained response from Azure OpenAI.")
+
     except Exception as e:
         logger.error(f"Azure API call failed: {e}")
         return jsonify({'error': f'Azure API call failed: {str(e)}'}), 500

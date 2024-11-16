@@ -11,10 +11,16 @@ from helpers.pdf_utils import process_uploaded_pdf
 from helpers.query_utils import query_documents_helper
 
 # Load environment variables from .env file
+
 load_dotenv()
 
 # Handle potential library conflicts
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+os.environ["AZURE_OPENAI_API_KEY"] = "2NCD4p44jNbxqVXEFl5cEjcIg5fbqrNi5INs3VvPwQGPnt6zGWPKJQQJ99AJACmepeSXJ3w3AAABACOGAHUq"
+os.environ["AZURE_OPENAI_ENDPOINT"] = "https://rag-chatapp.openai.azure.com/"
+
+
 
 # Initialize Flask app and enable CORS
 app = Flask(__name__)
