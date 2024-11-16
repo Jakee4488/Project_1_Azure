@@ -77,7 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleVoiceIcon(isListening) {
-        voiceBtn.innerHTML = isListening ? `<i class="bi bi-mic-mute-fill"></i>` : `<i class="bi bi-mic-fill"></i>`;
+        voiceBtn.innerHTML = isListening
+            ? `<i class="bi bi-mic-mute-fill"></i>`
+            : `<i class="bi bi-mic-fill"></i>`;
     }
 
     // =======================
@@ -152,12 +154,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to query the bot API
     async function queryBotAPI(userMessage) {
+        // Prepare the request payload
+        const bodyData = { query: userMessage };
+        if (uploadedFilename) {
+            bodyData.filename = uploadedFilename; // Optional for file upload
+        }
+
         const response = await fetch('/api/query', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ query: userMessage, filename: uploadedFilename })
+            body: JSON.stringify(bodyData) // Send the body data
         });
 
         if (!response.ok) {
@@ -173,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFileSelection(e) {
         const file = e.target.files[0];
         if (file) {
-            appendMessage('user', 'Sent a file:', file, true);
+            appendMessage('user', `Sent a file: ${file.name}`, file, true);
             fileInput.value = '';
 
             const formData = new FormData();
@@ -334,7 +342,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggles the theme between light and dark modes
     function toggleTheme() {
         const isDarkMode = document.body.classList.toggle('dark-mode');
-        themeToggleBtn.innerHTML = isDarkMode ? '<i class="bi bi-sun-fill me-2"></i> Light Mode' : '<i class="bi bi-moon-fill me-2"></i> Dark Mode';
+        themeToggleBtn.innerHTML = isDarkMode
+            ? '<i class="bi bi-sun-fill me-2"></i> Light Mode'
+            : '<i class="bi bi-moon-fill me-2"></i> Dark Mode';
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     }
 

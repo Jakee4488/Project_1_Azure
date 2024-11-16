@@ -10,7 +10,6 @@ from helpers.pdf_utils import process_uploaded_pdf
 from helpers.query_utils import query_documents_helper
 
 # Load environment variables from .env file
-
 load_dotenv()
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -18,7 +17,10 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 app = Flask(__name__)
 CORS(app)
 
-
+# Set up logging
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Routes
 @app.route('/')
@@ -37,15 +39,21 @@ def upload_file():
 def query_documents():
     data = request.json
     user_query = data.get('query')
-    filename = data.get('filename')
+    filename = data.get('filename')  # This can now be None
 
     if not user_query:
         return jsonify({'error': 'No query provided'}), 400
 
-    if not filename:
-        return jsonify({'error': 'Filename is required'}), 400
+    # Removed enforcement of filename
+    # if not filename:
+    #     return jsonify({'error': 'Filename is required'}), 400
 
-    return query_documents_helper(user_query, filename)
+    try:
+        response = query_documents_helper(user_query, filename)
+        return response
+    except Exception as e:
+        logger.exception("An unexpected error occurred while processing the query.")
+        return jsonify({'error': 'An unexpected error occurred.'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
