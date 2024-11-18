@@ -11,7 +11,7 @@
 8. [Troubleshooting](#troubleshooting)
 
 ## Project Overview
-The RAG (Retrieval-Augmented Generation) Chat Application is a sophisticated web application that combines document processing, vector embeddings, and natural language processing to provide intelligent responses based on uploaded documents.
+The RAG (Retrieval-Augmented Generation) Chat Application is a sophisticated web application that combines document processing, vector embeddings, and natural language processing to provide intelligent responses based on uploaded documents   .
 
 ### Key Features
 - Document processing (PDF, TXT, DOC, DOCX)
