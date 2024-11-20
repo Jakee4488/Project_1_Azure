@@ -48,7 +48,7 @@ def upload_file():
         return jsonify({'error': 'No selected file'}), 400
 
     logger.info(f"Received file upload: {file.filename}")
-    return handle_file_upload(file)
+    return handle_file_upload(file,file.filename)
 
 
 @app.route('/api/query', methods=['POST'])

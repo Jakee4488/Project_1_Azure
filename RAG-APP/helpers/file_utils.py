@@ -6,17 +6,19 @@ from constants import UPLOAD_FOLDER, ALLOWED_EXTENSIONS
 
 upload_folder = UPLOAD_FOLDER
 
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Helper function to handle file uploads
-def handle_file_upload(file):
-    if file.filename == '':
+def handle_file_upload(file,filename):
+    if filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
-    if file and allowed_file(file.filename):
+    if file and allowed_file(filename):
         try:
-            filename = secure_filename(file.filename)
+            filename = secure_filename(filename)
             file_path = os.path.join(upload_folder, filename)
             file.save(file_path)
 

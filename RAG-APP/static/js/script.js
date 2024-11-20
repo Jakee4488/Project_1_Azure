@@ -178,42 +178,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handles file selection and upload
-    function handleFileSelection(e) {
-        const file = e.target.files[0];
-        if (file) {
-            appendMessage('user', `Sent a file: ${file.name}`, file, true);
-            fileInput.value = '';
+    // Handles file selection and upload
+// Handles file selection and upload
+function handleFileSelection(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const filename = file.name; // Get the filename from the file object
+        appendMessage('user', `Sent a file: ${filename}`, file, true);
+        fileInput.value = '';
 
-            const formData = new FormData();
-            formData.append('file', file);
+        const formData = new FormData();
+        formData.append('file', file);
 
-            if (!isBotResponding) {
-                isBotResponding = true;
-                appendMessage('bot', 'loading', null, false);
+        if (!isBotResponding) {
+            isBotResponding = true;
+            appendMessage('bot', 'loading', null, false);
 
-                fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const loadingMessage = chatWindow.querySelector('.message.bot.loading');
-                    if (loadingMessage) loadingMessage.remove();
-                    appendMessage('bot', data.message, null, true);
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response data:', data); // Log the entire response data
+                const loadingMessage = chatWindow.querySelector('.message.bot.loading');
+                if (loadingMessage) loadingMessage.remove();
+                appendMessage('bot', data.message, null, true);
+                if (data.filename) {
                     uploadedFilename = data.filename.replace('.pdf', ''); // Store the uploaded filename without .pdf
                     console.log('Uploaded filename:', uploadedFilename);
-                    isBotResponding = false;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    const loadingMessage = chatWindow.querySelector('.message.bot.loading');
-                    if (loadingMessage) loadingMessage.remove();
-                    appendMessage('bot', 'Failed to upload the file.', null, true);
-                    isBotResponding = false;
-                });
-            }
+                } else {
+                    console.error('Filename is missing in the response data');
+                }
+                isBotResponding = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const loadingMessage = chatWindow.querySelector('.message.bot.loading');
+                if (loadingMessage) loadingMessage.remove();
+                appendMessage('bot', 'Failed to upload the file.', null, true);
+                isBotResponding = false;
+            });
         }
     }
+}
 
     // Appends a message to the chat window
     // Added 'shouldSave' parameter to control saving to localStorage
