@@ -1,8 +1,12 @@
-RAG-APP/.env
+
 RAG-APP/__pycache__/
 RAG-APP/__pycache__/constants.cpython-312.pyc
 Project_1_Azure_env/
 RAG-APP/helpers/__pycache__/
 Python_Azure
 .vscode/
-.vscode
+RAG-APP/uploads/
+RAG-APP/chunks/
+RAG-APP/embeddings/
+RAG-APP/vector_store/
+RAG-APP/.env
