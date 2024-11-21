@@ -105,8 +105,8 @@ rag = LightRAG(
     ),
 )
 
-book1 = open("./book_1.txt", encoding="utf-8")
-book2 = open("./book_2.txt", encoding="utf-8")
+book1 = open("books/book_1.txt", encoding="utf-8")
+book2 = open("books/book_2.txt", encoding="utf-8")
 
 rag.insert([book1.read(), book2.read()])
 
