@@ -50,6 +50,7 @@ async def llm_model_func(
         "temperature": kwargs.get("temperature", 0),
         "top_p": kwargs.get("top_p", 1),
         "n": kwargs.get("n", 1),
+
     }
 
     async with aiohttp.ClientSession() as session:
@@ -93,14 +94,14 @@ async def test_funcs():
 
 asyncio.run(test_funcs())
 
-embedding_dimension = 3072
+embedding_dimension = 1536
 
 rag = LightRAG(
     working_dir=WORKING_DIR,
     llm_model_func=llm_model_func,
     embedding_func=EmbeddingFunc(
         embedding_dim=embedding_dimension,
-        max_token_size=8192,
+        max_token_size=900,
         func=embedding_func,
     ),
 )
